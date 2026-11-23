@@ -62,18 +62,18 @@ def _degraded_for(hass: HomeAssistant, climate: str) -> str | None:
 
 
 def build_config(hass: HomeAssistant, rooms: list[dict[str, Any]], is_proxy) -> dict[str, Any]:
-    """Dashboard-Konfiguration aus den Räumen."""
-    sections: list[dict[str, Any]] = [
-        {
-            "type": "grid",
-            "column_span": 2,
-            "cards": [{"type": "custom:heizplaner-card", "title": "Heizplaner", "grid_options": {"columns": "full"}}],
-        }
-    ]
+    """Dashboard-Konfiguration aus den Räumen.
 
+    Raster mit 4 Spalten:
+    Reihe 1: Heizplaner (2 Spalten) | Alle Räume – Verläufe (2 Spalten)
+    darunter: ein Raum pro Spalte, alle gleich aufgebaut.
+    Auf kleineren Bildschirmen bricht HA das Raster automatisch um.
+    """
+    room_sections: list[dict[str, Any]] = []
     temps, hums = [], []
     for room in rooms:
         name = room[CONF_ROOM_NAME]
+        icon = room.get(CONF_ROOM_ICON) or "mdi:home-thermometer"
         climate = room[CONF_ROOM_CLIMATE]
         sensor = room.get(CONF_ROOM_SENSOR)
         humidity = _humidity_for(hass, sensor)
@@ -83,12 +83,7 @@ def build_config(hass: HomeAssistant, rooms: list[dict[str, Any]], is_proxy) -> 
         if humidity:
             hums.append({"entity": humidity, "name": name})
 
-        heading: dict[str, Any] = {
-            "type": "heading",
-            "heading": name,
-            "heading_style": "title",
-            "icon": room.get(CONF_ROOM_ICON) or "mdi:home-thermometer",
-        }
+        heading: dict[str, Any] = {"type": "heading", "heading": name, "heading_style": "title", "icon": icon}
         if degraded:
             heading["badges"] = [
                 {
@@ -111,40 +106,37 @@ def build_config(hass: HomeAssistant, rooms: list[dict[str, Any]], is_proxy) -> 
             {
                 "type": "tile",
                 "entity": climate,
-                "name": name,
-                "icon": room.get(CONF_ROOM_ICON) or "mdi:radiator",
-                "state_content": ["current_temperature", "preset_mode", "hvac_action"],
+                "name": "Heizung",
+                "icon": "mdi:radiator",
+                "state_content": ["preset_mode", "hvac_action"],
                 "features_position": "bottom",
                 "features": features,
                 "grid_options": {"columns": "full"},
             },
         ]
-        if sensor:
-            cards.append(
-                {
-                    "type": "tile",
-                    "entity": sensor,
-                    "name": "Temperatur",
-                    "color": "orange",
-                    "features_position": "bottom",
-                    "features": [{"type": "trend-graph", "hours_to_show": 24}],
-                    "grid_options": {"columns": 6},
-                }
-            )
-        if humidity:
-            cards.append(
-                {
-                    "type": "tile",
-                    "entity": humidity,
-                    "name": "Luftfeuchte",
-                    "color": "light-blue",
-                    "features_position": "bottom",
-                    "features": [{"type": "trend-graph", "hours_to_show": 24}],
-                    "grid_options": {"columns": 6},
-                }
-            )
-        sections.append({"type": "grid", "cards": cards})
+        # Temperatur + Luftfeuchte immer als Paar nebeneinander (gleiche Höhe in allen Räumen)
+        for entity, label, color in ((sensor, "Temperatur", "orange"), (humidity, "Luftfeuchte", "light-blue")):
+            if entity:
+                cards.append(
+                    {
+                        "type": "tile",
+                        "entity": entity,
+                        "name": label,
+                        "color": color,
+                        "vertical": False,
+                        "features_position": "bottom",
+                        "features": [{"type": "trend-graph", "hours_to_show": 24}],
+                        "grid_options": {"columns": 6, "rows": 2},
+                    }
+                )
+        room_sections.append({"type": "grid", "cards": cards})
 
+    planer_section = {
+        "type": "grid",
+        "column_span": 2,
+        "cards": [{"type": "custom:heizplaner-card", "title": "Heizplaner", "grid_options": {"columns": "full"}}],
+    }
+    sections: list[dict[str, Any]] = [planer_section]
     if temps or hums:
         cards = [{"type": "heading", "heading": "Alle Räume", "heading_style": "title", "icon": "mdi:chart-line"}]
         if temps:
@@ -158,6 +150,7 @@ def build_config(hass: HomeAssistant, rooms: list[dict[str, Any]], is_proxy) -> 
                  "grid_options": {"columns": "full"}}
             )
         sections.append({"type": "grid", "column_span": 2, "cards": cards})
+    sections += room_sections
 
     return {
         "title": TITLE,
@@ -167,7 +160,8 @@ def build_config(hass: HomeAssistant, rooms: list[dict[str, Any]], is_proxy) -> 
                 "path": "heizung",
                 "icon": ICON,
                 "type": "sections",
-                "max_columns": 3,
+                "max_columns": 4,
+                "dense_section_placement": True,
                 "sections": sections,
             }
         ],

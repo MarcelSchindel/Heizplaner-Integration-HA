@@ -1,5 +1,5 @@
 /* Heizplaner-Karte \u2013 Wochenplan-Editor f\u00fcr die Heizplaner-Integration */
-const HP_VERSION = "0.3.1";
+const HP_VERSION = "0.3.2";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
