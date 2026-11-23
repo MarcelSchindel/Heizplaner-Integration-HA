@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 DOMAIN = "heizplaner"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 CARD_URL = f"/{DOMAIN}/heizplaner-card.js"
 
@@ -24,6 +24,7 @@ CONF_ROOM_AREA = "area_id"
 CONF_ROOM_PROXY_ENTRY = "proxy_entry_id"
 CONF_CREATE_PROXY = "create_proxy"
 CONF_SELECTED = "rooms_selected"
+CONF_DASHBOARD = "dashboard"
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 WEEKDAY_LABELS = {

@@ -60,6 +60,7 @@ class ModeSensor(HeizplanerEntity, SensorEntity):
             "feiertag": info.holiday if info else None,
             "plan_version": self.planer.plan_version,
             "aktiv": self.planer.switches[SW_AKTIV],
+            "dashboard": self.planer.dashboard_state,
         }
 
 

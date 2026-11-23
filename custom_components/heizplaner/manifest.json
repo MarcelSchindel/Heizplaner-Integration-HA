@@ -10,8 +10,9 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "http",
     "frontend",
+    "http",
+    "lovelace",
     "websocket_api"
   ],
   "documentation": "https://github.com/MarcelSchindel/Heizplaner-Integration-HA",
@@ -22,5 +23,5 @@
     "holidays>=0.50"
   ],
   "single_config_entry": true,
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

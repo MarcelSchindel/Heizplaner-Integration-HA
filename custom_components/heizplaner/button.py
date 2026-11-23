@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -13,7 +14,7 @@ from .entity import HeizplanerEntity
 async def async_setup_entry(
     hass: HomeAssistant, entry: HeizplanerConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
 ) -> None:
-    async_add_entities([ApplyButton(entry.runtime_data)])
+    async_add_entities([ApplyButton(entry.runtime_data), DashboardButton(entry.runtime_data)])
 
 
 class ApplyButton(HeizplanerEntity, ButtonEntity):
@@ -25,3 +26,17 @@ class ApplyButton(HeizplanerEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         await self.planer.async_apply_now()
+
+
+class DashboardButton(HeizplanerEntity, ButtonEntity):
+    """Dashboard „Heizung“ neu erzeugen (verwirft eigene Änderungen daran)."""
+
+    _attr_name = "Dashboard neu erzeugen"
+    _attr_icon = "mdi:view-dashboard-edit"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, planer) -> None:
+        super().__init__(planer, "dashboard_rebuild")
+
+    async def async_press(self) -> None:
+        await self.planer.async_update_dashboard(force=True)

@@ -68,6 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HeizplanerConfigEntry) -
     entry.runtime_data = planer
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await planer.async_start()
+    await planer.async_setup_dashboard()
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
 

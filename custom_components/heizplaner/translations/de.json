@@ -7,7 +7,8 @@
         "data": {
           "subdiv": "Bundesland (Feiertage)",
           "buero_days": "Bürotage",
-          "homeoffice_days": "Homeoffice-Tage"
+          "homeoffice_days": "Homeoffice-Tage",
+          "dashboard": "Dashboard „Heizung“ in der Seitenleiste"
         }
       },
       "rooms": {
@@ -82,8 +83,10 @@
         "data": {
           "subdiv": "Bundesland (Feiertage)",
           "buero_days": "Bürotage",
-          "homeoffice_days": "Homeoffice-Tage"
-        }
+          "homeoffice_days": "Homeoffice-Tage",
+          "dashboard": "Dashboard „Heizung“ in der Seitenleiste"
+        },
+        "description": "Das Dashboard „Heizung“ wird aus den Räumen erzeugt und bei neuen Räumen aktualisiert. Sobald du es selbst bearbeitest, bleibt es so – zurück zum automatischen Stand mit dem Knopf „Dashboard neu erzeugen“."
       },
       "scan": {
         "title": "Räume suchen",

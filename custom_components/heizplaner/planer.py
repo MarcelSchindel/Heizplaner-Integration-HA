@@ -23,6 +23,7 @@ from homeassistant.util import dt as dt_util
 from .const import (
     ALL_STUFEN,
     CONF_BUERO_DAYS,
+    CONF_DASHBOARD,
     CONF_HOMEOFFICE_DAYS,
     CONF_ROOM_CLIMATE,
     CONF_ROOM_ID,
@@ -91,6 +92,9 @@ class Planer:
         self._holiday_years: set[int] = set()
         self._last_date: date | None = None
         self._unsubs: list[Callable[[], None]] = []
+        self._dashboard_hash: str | None = None
+        self.dashboard_state = "aus"  # aus | automatisch | von Hand geändert | Fehler
+        self._dashboard = None
         self._started = False
         self._evaluating = False
         self._pending = False
@@ -120,13 +124,16 @@ class Planer:
         data = await self._store.async_load() or {}
         self.schedule = data.get("schedule", {})
         self.plan_version = data.get("version", 0)
+        self._dashboard_hash = data.get("dashboard_hash")
         for room in self.rooms:
             self.schedule[room[CONF_ROOM_ID]] = normalize_room_plan(
                 self.schedule.get(room[CONF_ROOM_ID], {}), DEFAULT_SCHEDULE
             )
 
     async def _async_save(self) -> None:
-        await self._store.async_save({"schedule": self.schedule, "version": self.plan_version})
+        await self._store.async_save(
+            {"schedule": self.schedule, "version": self.plan_version, "dashboard_hash": self._dashboard_hash}
+        )
 
     async def async_start(self) -> None:
         """Nach dem Laden aller Entitäten starten."""
@@ -170,7 +177,41 @@ class Planer:
         except Exception:  # noqa: BLE001
             _LOGGER.exception("Suche nach neuen Proxys fehlgeschlagen")
 
+    # ------------------------------------------------------------------ Dashboard
+    async def async_setup_dashboard(self) -> None:
+        if not self.entry.options.get(CONF_DASHBOARD, True):
+            self.dashboard_state = "aus"
+            return
+        from .dashboard import Dashboard  # noqa: PLC0415
+
+        self._dashboard = Dashboard(self.hass)
+        if not self._dashboard.register():
+            self.dashboard_state = "Fehler"
+            return
+        await self.async_update_dashboard(force=False)
+
+    async def async_update_dashboard(self, force: bool) -> None:
+        if self._dashboard is None or not self._dashboard.registered:
+            return
+        from .dashboard import build_config  # noqa: PLC0415
+
+        try:
+            config = build_config(self.hass, self.rooms, self._is_proxy)
+            new_hash, edited = await self._dashboard.async_update(config, self._dashboard_hash, force)
+        except Exception:  # noqa: BLE001
+            _LOGGER.exception("Dashboard konnte nicht erzeugt werden")
+            self.dashboard_state = "Fehler"
+            return
+        self.dashboard_state = "von Hand geändert" if edited else "automatisch"
+        if new_hash != self._dashboard_hash:
+            self._dashboard_hash = new_hash
+            await self._async_save()
+        async_dispatcher_send(self.hass, SIGNAL_UPDATE)
+
     async def async_stop(self) -> None:
+        if self._dashboard is not None:
+            self._dashboard.unregister()
+            self._dashboard = None
         for unsub in self._unsubs:
             unsub()
         self._unsubs.clear()

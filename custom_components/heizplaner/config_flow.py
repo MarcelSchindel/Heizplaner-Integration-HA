@@ -13,6 +13,7 @@ from homeassistant.helpers import selector
 from .const import (
     CONF_BUERO_DAYS,
     CONF_CREATE_PROXY,
+    CONF_DASHBOARD,
     CONF_HOMEOFFICE_DAYS,
     CONF_ROOM_AREA,
     CONF_ROOM_CLIMATE,
@@ -71,6 +72,7 @@ def _settings_schema(defaults: dict[str, Any]) -> vol.Schema:
             vol.Required(
                 CONF_HOMEOFFICE_DAYS, default=defaults.get(CONF_HOMEOFFICE_DAYS, DEFAULT_HOMEOFFICE_DAYS)
             ): _days_selector(),
+            vol.Required(CONF_DASHBOARD, default=defaults.get(CONF_DASHBOARD, True)): selector.BooleanSelector(),
         }
     )
 

@@ -21,6 +21,11 @@ funktioniert aber auch mit normalen Thermostaten (`climate`-Entitäten).
 - Gesendet wird **nur an Wechselpunkten** – manuelle Änderungen bleiben bis zum nächsten Wechsel
   (Karte zeigt „Manuell bis …“). Ein laufender **Boost** wird nicht unterbrochen.
 - Vor dem ersten Wechsel des Tages gilt die letzte Stufe vom Vortag.
+- **Dashboard „Heizung“** in der Seitenleiste – automatisch aus den Räumen erzeugt: Heizplaner-Karte,
+  je Raum Thermostat/Proxy mit Presets, Temperatur und Luftfeuchte, Vergleich aller Räume.
+  Neue Räume kommen automatisch dazu. Wer das Dashboard selbst bearbeitet, behält seine Änderungen;
+  der Knopf *Dashboard neu erzeugen* stellt den automatischen Stand wieder her.
+  Abschaltbar unter *Konfigurieren → Tage & Bundesland*.
 - **Karte** `custom:heizplaner-card` mit Wochenplan-Editor – wird von der Integration automatisch geladen.
 
 ## Installation
@@ -62,6 +67,7 @@ Ein komplettes Beispiel-Dashboard liegt in [`examples/`](examples/).
 | `sensor.heizplaner_modus` | was heute gilt |
 | `sensor.heizplaner_<raum>` | Plan-Status je Raum (Attribute: stufe, ziel, naechster_wechsel, manuell …) |
 | `button.heizplaner_plan_jetzt_anwenden` | Plan sofort senden (überschreibt manuelle Änderungen) |
+| `button.heizplaner_dashboard_neu_erzeugen` | Dashboard „Heizung“ neu aus den Räumen erzeugen |
 
 ## Dienste
 - `heizplaner.set_plan` – `room`, `daytype` (`buero`/`homeoffice`/`wochenende`), `points` z. B. `[["06:00","komfort"],["22:30","nacht"]]`
