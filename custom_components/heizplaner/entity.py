@@ -22,7 +22,7 @@ class HeizplanerEntity(Entity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, planer.entry.entry_id)},
             name="Heizplaner",
-            manufacturer="Marcel",
+            manufacturer="Heizplaner",
             model="Wochenplan",
             sw_version=VERSION,
             entry_type=DeviceEntryType.SERVICE,

@@ -190,7 +190,7 @@ action: heizplaner.apply_now
 ```yaml
 triggers:
   - trigger: state
-    entity_id: person.marcel
+    entity_id: person.ich
     to: home
     for: "01:00:00"
 conditions:
