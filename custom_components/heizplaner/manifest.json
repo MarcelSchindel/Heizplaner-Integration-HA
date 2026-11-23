@@ -1,0 +1,22 @@
+{
+  "domain": "heizplaner",
+  "name": "Heizplaner",
+  "codeowners": [
+    "@MarcelSchindel"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "http",
+    "frontend",
+    "websocket_api"
+  ],
+  "documentation": "https://github.com/MarcelSchindel/Heizplaner-Integration-HA",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/MarcelSchindel/Heizplaner-Integration-HA/issues",
+  "requirements": [
+    "holidays>=0.50"
+  ],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

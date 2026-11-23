@@ -1,0 +1,125 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Heizplaner einrichten",
+        "description": "Feiertage werden für das gewählte Bundesland automatisch wie ein Wochenende behandelt. Tage, die weder Bürotag noch Homeoffice sind, gelten als Wochenende.",
+        "data": {
+          "subdiv": "Bundesland (Feiertage)",
+          "buero_days": "Bürotage",
+          "homeoffice_days": "Homeoffice-Tage"
+        }
+      }
+    },
+    "error": {
+      "days_overlap": "Ein Tag kann nicht gleichzeitig Bürotag und Homeoffice sein."
+    },
+    "abort": {
+      "already_configured": "Der Heizplaner ist schon eingerichtet.",
+      "single_instance_allowed": "Der Heizplaner ist schon eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Heizplaner",
+        "menu_options": {
+          "add_room": "Raum hinzufügen",
+          "edit_room": "Raum bearbeiten",
+          "remove_room": "Raum entfernen",
+          "settings": "Tage & Bundesland"
+        }
+      },
+      "add_room": {
+        "title": "Raum hinzufügen",
+        "description": "Als Thermostat am besten den Tado X Proxy des Raums wählen. Komfort, Eco und Verreist werden dann als Preset gesetzt, Nacht und Schlafen als Temperatur. Der Zeitplan wird danach in der Heizplaner-Karte eingestellt.",
+        "data": {
+          "name": "Name",
+          "climate_entity": "Thermostat / Tado X Proxy",
+          "sensor_entity": "Raumtemperatur (nur Anzeige)",
+          "icon": "Symbol"
+        }
+      },
+      "edit_room": {
+        "title": "Raum bearbeiten",
+        "data": {
+          "room": "Raum"
+        }
+      },
+      "edit_room_details": {
+        "title": "{room} bearbeiten",
+        "data": {
+          "name": "Name",
+          "climate_entity": "Thermostat / Tado X Proxy",
+          "sensor_entity": "Raumtemperatur (nur Anzeige)",
+          "icon": "Symbol"
+        }
+      },
+      "remove_room": {
+        "title": "Raum entfernen",
+        "description": "Der Zeitplan des Raums wird gelöscht. Das Thermostat bleibt auf dem zuletzt gesetzten Wert.",
+        "data": {
+          "room": "Raum"
+        }
+      },
+      "settings": {
+        "title": "Tage & Bundesland",
+        "data": {
+          "subdiv": "Bundesland (Feiertage)",
+          "buero_days": "Bürotage",
+          "homeoffice_days": "Homeoffice-Tage"
+        }
+      }
+    },
+    "error": {
+      "days_overlap": "Ein Tag kann nicht gleichzeitig Bürotag und Homeoffice sein.",
+      "climate_in_use": "Dieses Thermostat ist schon einem anderen Raum zugeordnet."
+    }
+  },
+  "services": {
+    "set_plan": {
+      "name": "Plan setzen",
+      "description": "Setzt die Wechselpunkte eines Raums für einen Tagtyp.",
+      "fields": {
+        "room": {
+          "name": "Raum",
+          "description": "ID oder Name des Raums"
+        },
+        "daytype": {
+          "name": "Tagtyp",
+          "description": "buero, homeoffice oder wochenende"
+        },
+        "points": {
+          "name": "Wechselpunkte",
+          "description": "Liste aus [Uhrzeit, Stufe], Stufen: komfort, eco, nacht, schlafen"
+        }
+      }
+    },
+    "add_room": {
+      "name": "Raum hinzufügen",
+      "description": "Legt einen Raum an.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Anzeigename"
+        },
+        "climate_entity": {
+          "name": "Thermostat",
+          "description": "Climate-Entität (am besten der Tado X Proxy)"
+        },
+        "sensor_entity": {
+          "name": "Raumsensor",
+          "description": "Temperatursensor für die Anzeige"
+        },
+        "icon": {
+          "name": "Symbol",
+          "description": "MDI-Symbol"
+        }
+      }
+    },
+    "apply_now": {
+      "name": "Plan jetzt anwenden",
+      "description": "Sendet den aktuellen Plan an alle Räume und überschreibt manuelle Änderungen."
+    }
+  }
+}

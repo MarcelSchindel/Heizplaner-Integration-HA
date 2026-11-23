@@ -1,0 +1,40 @@
+set_plan:
+  fields:
+    room:
+      required: true
+      example: wohnzimmer
+      selector:
+        text:
+    daytype:
+      required: true
+      selector:
+        select:
+          options:
+            - buero
+            - homeoffice
+            - wochenende
+    points:
+      required: true
+      example: '[["06:00", "komfort"], ["08:00", "eco"], ["16:00", "komfort"], ["22:30", "nacht"]]'
+      selector:
+        object:
+add_room:
+  fields:
+    name:
+      required: true
+      selector:
+        text:
+    climate_entity:
+      required: true
+      selector:
+        entity:
+          domain: climate
+    sensor_entity:
+      selector:
+        entity:
+          domain: sensor
+          device_class: temperature
+    icon:
+      selector:
+        icon:
+apply_now:
