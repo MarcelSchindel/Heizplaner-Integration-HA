@@ -1,0 +1,38 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie erwartet
+labels: [bug]
+body:
+  - type: textarea
+    id: was
+    attributes:
+      label: Was ist passiert?
+      description: Was hast du gemacht, was hast du erwartet, was ist stattdessen passiert?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Heizplaner-Version
+      placeholder: "0.3.2"
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Home-Assistant-Version
+      placeholder: "2026.11.2"
+  - type: dropdown
+    id: geraete
+    attributes:
+      label: Thermostate
+      multiple: true
+      options:
+        - Tado X Proxy
+        - Tado X (ohne Proxy)
+        - anderes Thermostat
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: "Einstellungen → System → Protokolle, nach „heizplaner“ filtern"
+      render: text

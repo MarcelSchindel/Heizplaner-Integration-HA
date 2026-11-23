@@ -2,7 +2,6 @@
   "domain": "heizplaner",
   "name": "Heizplaner",
   "after_dependencies": [
-    "tadox_proxy",
     "repairs"
   ],
   "codeowners": [
