@@ -37,4 +37,11 @@ add_room:
     icon:
       selector:
         icon:
+    area:
+      selector:
+        area:
+    create_proxy:
+      default: true
+      selector:
+        boolean:
 apply_now:

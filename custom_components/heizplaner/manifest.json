@@ -1,6 +1,10 @@
 {
   "domain": "heizplaner",
   "name": "Heizplaner",
+  "after_dependencies": [
+    "tadox_proxy",
+    "repairs"
+  ],
   "codeowners": [
     "@MarcelSchindel"
   ],
@@ -18,5 +22,5 @@
     "holidays>=0.50"
   ],
   "single_config_entry": true,
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

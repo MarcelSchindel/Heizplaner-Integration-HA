@@ -9,10 +9,22 @@
           "buero_days": "Bürotage",
           "homeoffice_days": "Homeoffice-Tage"
         }
+      },
+      "rooms": {
+        "title": "Räume übernehmen",
+        "description": "Gefundene Räume – die vorausgewählten werden übernommen.\n\n• **Tado X Proxy**: wird so übernommen.\n• **Tado-Thermostat**: der Heizplaner legt dafür einen Tado X Proxy mit dem genannten Raumsensor an.\n• **Thermostat**: wird direkt gesteuert (nicht vorausgewählt).\n\nAlles lässt sich später unter Konfigurieren ändern. {failed}",
+        "data": {
+          "rooms_selected": "Räume"
+        }
       }
     },
     "error": {
-      "days_overlap": "Ein Tag kann nicht gleichzeitig Bürotag und Homeoffice sein."
+      "days_overlap": "Ein Tag kann nicht gleichzeitig Bürotag und Homeoffice sein.",
+      "proxy_failed": "Für folgende Räume konnte kein Tado X Proxy angelegt werden: {failed}. Die übrigen wurden übernommen – die fehlenden über „Raum hinzufügen“ erneut versuchen.",
+      "proxy_not_installed": "Die Integration „Tado X Proxy“ ist nicht installiert. Entweder installieren oder „Tado X Proxy anlegen“ abwählen.",
+      "proxy_incompatible": "Diese Version des Tado X Proxy wird nicht unterstützt – bitte den Proxy selbst anlegen und dann hier auswählen.",
+      "proxy_exists": "Für dieses Thermostat gibt es schon einen Tado X Proxy.",
+      "sensor_required": "Für einen Tado X Proxy wird ein Raumtemperatursensor gebraucht – keiner im Bereich gefunden, bitte auswählen."
     },
     "abort": {
       "already_configured": "Der Heizplaner ist schon eingerichtet.",
@@ -24,6 +36,7 @@
       "init": {
         "title": "Heizplaner",
         "menu_options": {
+          "scan": "Räume suchen",
           "add_room": "Raum hinzufügen",
           "edit_room": "Raum bearbeiten",
           "remove_room": "Raum entfernen",
@@ -32,11 +45,13 @@
       },
       "add_room": {
         "title": "Raum hinzufügen",
-        "description": "Als Thermostat am besten den Tado X Proxy des Raums wählen. Komfort, Eco und Verreist werden dann als Preset gesetzt, Nacht und Schlafen als Temperatur. Der Zeitplan wird danach in der Heizplaner-Karte eingestellt.",
+        "description": "Thermostat oder Tado X Proxy wählen. Bei einem Tado-Thermostat ohne Proxy legt der Heizplaner den Proxy an (Raumsensor nötig – leer lassen = Sensor aus dem Bereich). Name leer = Name des Bereichs.",
         "data": {
-          "name": "Name",
           "climate_entity": "Thermostat / Tado X Proxy",
-          "sensor_entity": "Raumtemperatur (nur Anzeige)",
+          "area_id": "Bereich",
+          "name": "Name",
+          "sensor_entity": "Raumtemperatursensor",
+          "create_proxy": "Tado X Proxy anlegen (bei Tado-Thermostat)",
           "icon": "Symbol"
         }
       },
@@ -69,11 +84,26 @@
           "buero_days": "Bürotage",
           "homeoffice_days": "Homeoffice-Tage"
         }
+      },
+      "scan": {
+        "title": "Räume suchen",
+        "description": "Gefundene Räume – die vorausgewählten werden übernommen.\n\n• **Tado X Proxy**: wird so übernommen.\n• **Tado-Thermostat**: der Heizplaner legt dafür einen Tado X Proxy mit dem genannten Raumsensor an.\n• **Thermostat**: wird direkt gesteuert (nicht vorausgewählt).\n\nAlles lässt sich später unter Konfigurieren ändern. {failed}",
+        "data": {
+          "rooms_selected": "Räume"
+        }
       }
     },
     "error": {
       "days_overlap": "Ein Tag kann nicht gleichzeitig Bürotag und Homeoffice sein.",
-      "climate_in_use": "Dieses Thermostat ist schon einem anderen Raum zugeordnet."
+      "climate_in_use": "Dieses Thermostat ist schon einem anderen Raum zugeordnet.",
+      "proxy_failed": "Für folgende Räume konnte kein Tado X Proxy angelegt werden: {failed}. Die übrigen wurden übernommen – die fehlenden über „Raum hinzufügen“ erneut versuchen.",
+      "proxy_not_installed": "Die Integration „Tado X Proxy“ ist nicht installiert. Entweder installieren oder „Tado X Proxy anlegen“ abwählen.",
+      "proxy_incompatible": "Diese Version des Tado X Proxy wird nicht unterstützt – bitte den Proxy selbst anlegen und dann hier auswählen.",
+      "proxy_exists": "Für dieses Thermostat gibt es schon einen Tado X Proxy.",
+      "sensor_required": "Für einen Tado X Proxy wird ein Raumtemperatursensor gebraucht – keiner im Bereich gefunden, bitte auswählen."
+    },
+    "abort": {
+      "nothing_found": "Keine neuen Thermostate oder Proxys gefunden – alle sind schon einem Raum zugeordnet."
     }
   },
   "services": {
@@ -97,7 +127,7 @@
     },
     "add_room": {
       "name": "Raum hinzufügen",
-      "description": "Legt einen Raum an.",
+      "description": "Legt einen Raum an – bei einem Tado-Thermostat ohne Proxy auf Wunsch inklusive Tado X Proxy.",
       "fields": {
         "name": {
           "name": "Name",
@@ -114,12 +144,46 @@
         "icon": {
           "name": "Symbol",
           "description": "MDI-Symbol"
+        },
+        "area": {
+          "name": "Bereich",
+          "description": "Bereich des Raums (für Sensor-Vorschlag und Proxy)"
+        },
+        "create_proxy": {
+          "name": "Tado X Proxy anlegen",
+          "description": "Bei einem Tado-Thermostat ohne Proxy automatisch einen anlegen"
         }
       }
     },
     "apply_now": {
       "name": "Plan jetzt anwenden",
       "description": "Sendet den aktuellen Plan an alle Räume und überschreibt manuelle Änderungen."
+    }
+  },
+  "issues": {
+    "new_proxy": {
+      "title": "Neuer Raum für den Heizplaner: {name}",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "{name} zum Heizplaner hinzufügen?",
+            "description": "Es gibt einen Tado X Proxy ({climate}), der noch keinem Raum im Heizplaner zugeordnet ist. Mit „Absenden“ wird er als Raum mit Startplan übernommen. Wenn du ihn nicht im Heizplaner haben willst, diesen Hinweis ignorieren.",
+            "data": {
+              "name": "Name des Raums"
+            }
+          }
+        },
+        "error": {
+          "proxy_failed": "Für folgende Räume konnte kein Tado X Proxy angelegt werden: {failed}. Die übrigen wurden übernommen – die fehlenden über „Raum hinzufügen“ erneut versuchen.",
+          "proxy_not_installed": "Die Integration „Tado X Proxy“ ist nicht installiert. Entweder installieren oder „Tado X Proxy anlegen“ abwählen.",
+          "proxy_incompatible": "Diese Version des Tado X Proxy wird nicht unterstützt – bitte den Proxy selbst anlegen und dann hier auswählen.",
+          "proxy_exists": "Für dieses Thermostat gibt es schon einen Tado X Proxy.",
+          "sensor_required": "Für einen Tado X Proxy wird ein Raumtemperatursensor gebraucht – keiner im Bereich gefunden, bitte auswählen."
+        },
+        "abort": {
+          "not_setup": "Der Heizplaner ist nicht eingerichtet."
+        }
+      }
     }
   }
 }

@@ -4,6 +4,13 @@ Wochenplan für die Heizung, gebaut für den [Tado X Proxy](https://github.com/k
 funktioniert aber auch mit normalen Thermostaten (`climate`-Entitäten).
 
 ## Funktionen
+- **Automatische Erkennung** beim Einrichten und über *Konfigurieren → Räume suchen*:
+  vorhandene Tado X Proxys (Name aus dem Bereich, Sensor aus den Proxy-Einstellungen),
+  Tado-Thermostate ohne Proxy und andere Thermostate. Thermostate hinter einem Proxy erscheinen nicht doppelt.
+- **Tado X Proxy direkt anlegen**: Für ein Tado-Thermostat ohne Proxy legt der Heizplaner über den
+  Einrichtungsdialog des Proxys einen an – mit dem Temperatursensor aus dem Bereich – und ordnet ihn dem Bereich zu.
+- **Neuer Proxy gefunden**: Wird später ein Proxy angelegt, erscheint unter *Einstellungen → Reparaturen*
+  ein Hinweis, mit dem man ihn per Klick als Raum übernimmt.
 - **Tagtypen** Bürotag / Homeoffice / Wochenende, Wochentage frei wählbar
 - **Feiertage** des Bundeslands werden automatisch wie ein Wochenende behandelt
 - **Schalter**: Heizplan · Homeoffice heute (setzt sich um Mitternacht zurück) · Frei / zu Hause · Verreist
@@ -22,7 +29,15 @@ funktioniert aber auch mit normalen Thermostaten (`climate`-Entitäten).
 **Manuell:** `custom_components/heizplaner` nach `/config/custom_components/` kopieren.
 
 Danach Home Assistant neu starten und unter *Einstellungen → Geräte & Dienste → Integration hinzufügen*
-**Heizplaner** einrichten. Räume über *Konfigurieren → Raum hinzufügen* anlegen.
+**Heizplaner** einrichten. Im zweiten Schritt schlägt der Heizplaner die gefundenen Räume vor –
+abhaken, fertig. Weitere Räume später über *Konfigurieren → Räume suchen* oder *Raum hinzufügen*.
+
+> Tipp: Thermostaten und Temperatursensoren einen **Bereich** geben – dann passen Raumnamen und
+> Sensor-Vorschläge automatisch.
+
+Das Anlegen von Proxys nutzt den Einrichtungsdialog von [ha-tadox-proxy](https://github.com/kinimodb/ha-tadox-proxy)
+(getestet mit 1.6.1). Ändert sich dieser Dialog, meldet der Heizplaner das – der Proxy kann dann
+von Hand angelegt und hier ausgewählt werden.
 
 ## Karte
 ```yaml
@@ -50,7 +65,8 @@ Ein komplettes Beispiel-Dashboard liegt in [`examples/`](examples/).
 
 ## Dienste
 - `heizplaner.set_plan` – `room`, `daytype` (`buero`/`homeoffice`/`wochenende`), `points` z. B. `[["06:00","komfort"],["22:30","nacht"]]`
-- `heizplaner.add_room` – `name`, `climate_entity`, optional `sensor_entity`, `icon`
+- `heizplaner.add_room` – `name`, `climate_entity`, optional `sensor_entity`, `icon`, `area`,
+  `create_proxy` (Standard: an – legt bei einem Tado-Thermostat ohne Proxy einen an)
 - `heizplaner.apply_now`
 
 ## Tests

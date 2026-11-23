@@ -7,11 +7,11 @@ from datetime import date, datetime, timedelta
 import logging
 from typing import Any
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import SIGNAL_CONFIG_ENTRY_CHANGED, ConfigEntry, ConfigEntryChange
 from homeassistant.const import ATTR_ENTITY_ID, STATE_OFF, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
 from homeassistant.helpers.event import (
     async_call_later,
     async_track_state_change_event,
@@ -46,6 +46,8 @@ from .const import (
     SW_HOMEOFFICE,
     SW_VERREIST,
 )
+from .discovery import PROXY_DOMAIN
+from .repairs import async_sync_issues
 from .schedule import (
     DayInfo,
     PlanState,
@@ -139,8 +141,34 @@ class Planer:
         # kurz warten, bis Proxys/Thermostate nach einem Neustart bereit sind
         self._unsubs.append(async_call_later(self.hass, 15, self._delayed_first_run))
 
+        # neue/entfernte Tado X Proxys -> Hinweis „Neuer Raum gefunden“ aktualisieren
+        self._unsubs.append(
+            async_dispatcher_connect(self.hass, SIGNAL_CONFIG_ENTRY_CHANGED, self._config_entry_changed)
+        )
+
     async def _delayed_first_run(self, _now: datetime) -> None:
+        self._sync_issues()
         await self.async_evaluate()
+
+    @callback
+    def _config_entry_changed(self, change: ConfigEntryChange, entry: ConfigEntry) -> None:
+        if entry.domain != PROXY_DOMAIN:
+            return
+        # kurz warten, bis der Proxy eingerichtet ist (und ggf. schon als Raum übernommen wurde)
+        self._unsubs.append(async_call_later(self.hass, 10, self._delayed_sync))
+
+    @callback
+    def _delayed_sync(self, _now: datetime) -> None:
+        self._sync_issues()
+
+    @callback
+    def _sync_issues(self) -> None:
+        if not self._started:
+            return
+        try:
+            async_sync_issues(self.hass, self.rooms)
+        except Exception:  # noqa: BLE001
+            _LOGGER.exception("Suche nach neuen Proxys fehlgeschlagen")
 
     async def async_stop(self) -> None:
         for unsub in self._unsubs:

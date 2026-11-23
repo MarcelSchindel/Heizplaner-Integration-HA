@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-import re
 from typing import Any
 
 import voluptuous as vol
@@ -39,6 +38,7 @@ from .const import (
     VERSION,
     WEEKDAYS,
 )
+from .discovery import ProxyCreateError, async_build_room, used_climates
 from .planer import Planer
 from .schedule import PlanError
 
@@ -48,14 +48,6 @@ PLATFORMS = [Platform.SWITCH, Platform.NUMBER, Platform.SENSOR, Platform.BUTTON]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 type HeizplanerConfigEntry = ConfigEntry[Planer]
-
-
-def slugify_room(name: str, existing: set[str]) -> str:
-    base = re.sub(r"[^a-z0-9]+", "_", name.lower().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")).strip("_") or "raum"
-    slug, n = base, 2
-    while slug in existing:
-        slug, n = f"{base}_{n}", n + 1
-    return slug
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -188,6 +180,8 @@ ADD_ROOM_SCHEMA = vol.Schema(
         vol.Required("climate_entity"): cv.entity_id,
         vol.Optional("sensor_entity"): cv.entity_id,
         vol.Optional("icon"): cv.icon,
+        vol.Optional("area"): cv.string,
+        vol.Optional("create_proxy", default=True): cv.boolean,
     }
 )
 
@@ -210,18 +204,23 @@ def _register_services(hass: HomeAssistant) -> None:
     async def add_room(call: ServiceCall) -> None:
         planer = _get_planer(hass)
         rooms = planer.rooms
-        if any(r[CONF_ROOM_CLIMATE] == call.data["climate_entity"] for r in rooms):
+        climate = call.data["climate_entity"]
+        if climate in used_climates(hass, rooms):
             raise ServiceValidationError("Dieses Thermostat ist schon einem Raum zugeordnet")
-        rooms.append(
-            {
-                CONF_ROOM_ID: slugify_room(call.data["name"], {r[CONF_ROOM_ID] for r in rooms}),
-                CONF_ROOM_NAME: call.data["name"],
-                CONF_ROOM_CLIMATE: call.data["climate_entity"],
-                CONF_ROOM_SENSOR: call.data.get("sensor_entity"),
-                CONF_ROOM_ICON: call.data.get("icon"),
-            }
-        )
-        hass.config_entries.async_update_entry(planer.entry, options={**planer.entry.options, CONF_ROOMS: rooms})
+        try:
+            room = await async_build_room(
+                hass,
+                {r[CONF_ROOM_ID] for r in rooms},
+                name=call.data["name"],
+                climate=climate,
+                sensor=call.data.get("sensor_entity"),
+                area_id=call.data.get("area"),
+                icon=call.data.get("icon"),
+                create_proxy=call.data.get("create_proxy", True),
+            )
+        except ProxyCreateError as err:
+            raise ServiceValidationError(f"Tado X Proxy konnte nicht angelegt werden ({err.args[0]})") from err
+        hass.config_entries.async_update_entry(planer.entry, options={**planer.entry.options, CONF_ROOMS: [*rooms, room]})
 
     async def apply_now(call: ServiceCall) -> None:
         await _get_planer(hass).async_apply_now()
