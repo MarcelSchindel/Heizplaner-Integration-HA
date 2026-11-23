@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 DOMAIN = "heizplaner"
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 
 CARD_URL = f"/{DOMAIN}/heizplaner-card.js"
 

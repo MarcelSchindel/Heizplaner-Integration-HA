@@ -1,5 +1,5 @@
-/* Heizplaner-Karte – Wochenplan-Editor für die Heizplaner-Integration */
-const HP_VERSION = "0.3.0";
+/* Heizplaner-Karte \u2013 Wochenplan-Editor f\u00fcr die Heizplaner-Integration */
+const HP_VERSION = "0.3.1";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -11,14 +11,14 @@ const fmt = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 
 const WD_SHORT = { mon: "Mo", tue: "Di", wed: "Mi", thu: "Do", fri: "Fr", sat: "Sa", sun: "So" };
 
 function dayRange(days, all) {
-  // ["mon","tue","wed"] -> "Mo–Mi", ["mon","wed"] -> "Mo, Mi"
+  // ["mon","tue","wed"] -> "Mo\u2013Mi", ["mon","wed"] -> "Mo, Mi"
   const idx = days.map((d) => all.indexOf(d)).sort((a, b) => a - b);
   if (!idx.length) return "";
   const groups = [];
   let start = idx[0], prev = idx[0];
   for (const i of idx.slice(1).concat([99])) {
     if (i === prev + 1) { prev = i; continue; }
-    groups.push(start === prev ? WD_SHORT[all[start]] : `${WD_SHORT[all[start]]}–${WD_SHORT[all[prev]]}`);
+    groups.push(start === prev ? WD_SHORT[all[start]] : `${WD_SHORT[all[start]]}\u2013${WD_SHORT[all[prev]]}`);
     start = prev = i;
   }
   return groups.join(", ");
@@ -29,7 +29,7 @@ class HeizplanerCard extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this._cfg = null; // Daten der Integration
-    this._daytype = null; // gewählter Tagtyp-Tab
+    this._daytype = null; // gew\u00e4hlter Tagtyp-Tab
     this._edit = null; // { room, daytype, points, copy:Set, error }
     this._sig = "";
     this._loading = false;
@@ -127,7 +127,7 @@ class HeizplanerCard extends HTMLElement {
       return;
     }
     if (!this._cfg) {
-      root.innerHTML = `${STYLE}<ha-card><div class="empty">Lade Heizplaner …</div></ha-card>`;
+      root.innerHTML = `${STYLE}<ha-card><div class="empty">Lade Heizplaner \u2026</div></ha-card>`;
       return;
     }
     const c = this._cfg;
@@ -139,16 +139,16 @@ class HeizplanerCard extends HTMLElement {
           <div class="title">${esc(this._config.title)}</div>
           <div class="mode" title="Heute">
             <ha-icon icon="${esc(mode?.attributes?.icon || "mdi:calendar")}"></ha-icon>
-            <span>${esc(mode?.state || "–")}</span>
+            <span>${esc(mode?.state || "\u2013")}</span>
           </div>
-          <button class="icon-btn" data-action="apply" title="Plan jetzt anwenden (überschreibt manuelle Änderungen)">
+          <button class="icon-btn" data-action="apply" title="Plan jetzt anwenden (\u00fcberschreibt manuelle \u00c4nderungen)">
             <ha-icon icon="mdi:calendar-sync"></ha-icon>
           </button>
         </div>
         <div class="switches">${c.switches.map((s) => this._switchChip(s)).join("")}</div>
         <div class="tabs">${c.daytypes.map((d) => this._tab(d)).join("")}</div>
         <div class="rooms">
-          ${rooms.length ? rooms.map((r) => this._room(r)).join("") : `<div class="empty">Noch keine Räume – unter Einstellungen → Geräte &amp; Dienste → Heizplaner → Konfigurieren anlegen.</div>`}
+          ${rooms.length ? rooms.map((r) => this._room(r)).join("") : `<div class="empty">Noch keine R\u00e4ume \u2013 unter Einstellungen \u2192 Ger\u00e4te &amp; Dienste \u2192 Heizplaner \u2192 Konfigurieren anlegen.</div>`}
         </div>
         <div class="axis-legend">${c.stufen
           .filter((s) => s.plan)
@@ -168,7 +168,7 @@ class HeizplanerCard extends HTMLElement {
   _tab(d) {
     const w = this._cfg.weekdays;
     const days =
-      d.id === "buero" ? dayRange(w.buero, w.all) : d.id === "homeoffice" ? dayRange(w.homeoffice, w.all) : "Sa–So · Feiertage";
+      d.id === "buero" ? dayRange(w.buero, w.all) : d.id === "homeoffice" ? dayRange(w.homeoffice, w.all) : "Sa\u2013So \u00b7 Feiertage";
     const sel = d.id === this._daytype;
     const today = d.id === this._cfg.today;
     return `<button class="tab ${sel ? "sel" : ""}" data-action="tab" data-daytype="${d.id}">
@@ -193,7 +193,7 @@ class HeizplanerCard extends HTMLElement {
     if (plan.boost) badges.push(`<span class="badge boost"><ha-icon icon="mdi:rocket-launch"></ha-icon>Boost</span>`);
     if (plan.manuell)
       badges.push(
-        `<span class="badge manual" title="Von Hand geändert – gilt bis zum nächsten Wechsel">Manuell${plan.naechster_wechsel ? " bis " + esc(plan.naechster_wechsel) : ""}</span>`
+        `<span class="badge manual" title="Von Hand ge\u00e4ndert \u2013 gilt bis zum n\u00e4chsten Wechsel">Manuell${plan.naechster_wechsel ? " bis " + esc(plan.naechster_wechsel) : ""}</span>`
       );
     return `<div class="room ${editing ? "editing" : ""}">
       <div class="room-row">
@@ -203,8 +203,8 @@ class HeizplanerCard extends HTMLElement {
         <div class="room-main" data-action="more" data-entity="${esc(r.climate)}">
           <div class="room-name">${esc(r.name)} ${badges.join("")}</div>
           <div class="room-sub">
-            ${ist !== undefined && ist !== null ? `<b>${Number(ist).toFixed(1).replace(".", ",")}&nbsp;°C</b>` : "–"}
-            ${soll !== undefined && soll !== null ? `<span class="arrow">→</span><span>${Number(soll).toFixed(1).replace(".", ",")}&nbsp;°C</span>` : ""}
+            ${ist !== undefined && ist !== null ? `<b>${Number(ist).toFixed(1).replace(".", ",")}&nbsp;\u00b0C</b>` : "\u2013"}
+            ${soll !== undefined && soll !== null ? `<span class="arrow">\u2192</span><span>${Number(soll).toFixed(1).replace(".", ",")}&nbsp;\u00b0C</span>` : ""}
             ${heating ? `<ha-icon class="flame" icon="mdi:fire"></ha-icon>` : ""}
           </div>
         </div>
@@ -229,7 +229,7 @@ class HeizplanerCard extends HTMLElement {
     const pts = points.map(([t, s]) => [toMin(t), s]).sort((a, b) => a[0] - b[0]);
     if (!pts.length) return [];
     const segs = [];
-    // vor dem ersten Wechsel läuft die letzte Stufe des Vortags weiter (Anzeige: Ende dieses Plans)
+    // vor dem ersten Wechsel l\u00e4uft die letzte Stufe des Vortags weiter (Anzeige: Ende dieses Plans)
     if (pts[0][0] > 0) segs.push({ from: 0, to: pts[0][0], stufe: pts[pts.length - 1][1], carry: true });
     pts.forEach(([m, s], i) => segs.push({ from: m, to: i + 1 < pts.length ? pts[i + 1][0] : 1440, stufe: s }));
     return segs;
@@ -241,7 +241,7 @@ class HeizplanerCard extends HTMLElement {
     const nowMin = now.getHours() * 60 + now.getMinutes();
     const showNow = daytype === this._cfg.today;
     return `<div class="timeline ${editing ? "edit" : ""}" data-action="${editing ? "bar-add" : "edit"}" data-room="${esc(roomId)}"
-        title="${editing ? "Klicken, um hier einen Wechsel einzufügen" : "Klicken zum Bearbeiten"}">
+        title="${editing ? "Klicken, um hier einen Wechsel einzuf\u00fcgen" : "Klicken zum Bearbeiten"}">
       <div class="bar">
         ${segs
           .map((sg) => {
@@ -249,7 +249,7 @@ class HeizplanerCard extends HTMLElement {
             const w = ((sg.to - sg.from) / 1440) * 100;
             const label = !sg.carry && w >= 9 ? `<span>${fmt(sg.from)}</span>` : "";
             return `<div class="seg ${sg.carry ? "carry" : ""}" style="left:${(sg.from / 1440) * 100}%;width:${w}%;background:${st.color}"
-                title="${fmt(sg.from)}–${fmt(sg.to)} ${esc(st.label)}">${label}</div>`;
+                title="${fmt(sg.from)}\u2013${fmt(sg.to)} ${esc(st.label)}">${label}</div>`;
           })
           .join("")}
         ${showNow ? `<div class="now" style="left:${(nowMin / 1440) * 100}%"></div>` : ""}
@@ -270,7 +270,7 @@ class HeizplanerCard extends HTMLElement {
         <select data-action="pt-stufe" data-i="${i}">
           ${planStufen.map((ps) => `<option value="${ps.id}" ${ps.id === s ? "selected" : ""}>${esc(ps.label)}</option>`).join("")}
         </select>
-        <button class="icon-btn small" data-action="pt-del" data-i="${i}" title="Wechsel löschen" ${e.points.length <= 1 ? "disabled" : ""}>
+        <button class="icon-btn small" data-action="pt-del" data-i="${i}" title="Wechsel l\u00f6schen" ${e.points.length <= 1 ? "disabled" : ""}>
           <ha-icon icon="mdi:delete-outline"></ha-icon></button>
       </div>`
       )
@@ -280,20 +280,20 @@ class HeizplanerCard extends HTMLElement {
     const cb = (key, label) =>
       `<label class="cb"><input type="checkbox" data-action="copy" data-key="${esc(key)}" ${e.copy.has(key) ? "checked" : ""}>${esc(label)}</label>`;
     return `<div class="editor">
-      <div class="ed-title">${esc(r.name)} · ${esc(dtLabel)}</div>
+      <div class="ed-title">${esc(r.name)} \u00b7 ${esc(dtLabel)}</div>
       <div class="pts">${rows}</div>
-      <button class="text-btn" data-action="pt-add"><ha-icon icon="mdi:plus"></ha-icon>Wechsel hinzufügen</button>
+      <button class="text-btn" data-action="pt-add"><ha-icon icon="mdi:plus"></ha-icon>Wechsel hinzuf\u00fcgen</button>
       <div class="copy">
-        <div class="copy-h">Auch übernehmen für</div>
+        <div class="copy-h">Auch \u00fcbernehmen f\u00fcr</div>
         <div class="copy-list">
-          ${otherTypes.map((d) => cb(`tt:${d.id}`, `${r.name} · ${d.label}`)).join("")}
-          ${otherRooms.map((x) => cb(`room:${x.id}`, `${x.name} · ${dtLabel}`)).join("")}
+          ${otherTypes.map((d) => cb(`tt:${d.id}`, `${r.name} \u00b7 ${d.label}`)).join("")}
+          ${otherRooms.map((x) => cb(`room:${x.id}`, `${x.name} \u00b7 ${dtLabel}`)).join("")}
         </div>
       </div>
       ${e.error ? `<div class="err">${esc(e.error)}</div>` : ""}
       <div class="ed-actions">
         <button class="text-btn" data-action="cancel">Abbrechen</button>
-        <button class="primary" data-action="save" ${e.saving ? "disabled" : ""}>${e.saving ? "Speichere …" : "Speichern"}</button>
+        <button class="primary" data-action="save" ${e.saving ? "disabled" : ""}>${e.saving ? "Speichere \u2026" : "Speichern"}</button>
       </div>
     </div>`;
   }
@@ -304,9 +304,9 @@ class HeizplanerCard extends HTMLElement {
     return `<div class="stufe" style="--c:${s.color}">
       <ha-icon icon="${esc(s.icon)}"></ha-icon>
       <span class="stufe-label">${esc(s.label)}</span>
-      <button class="icon-btn small" data-action="stufe" data-entity="${esc(s.entity)}" data-delta="-0.5" title="0,5 °C kälter"><ha-icon icon="mdi:minus"></ha-icon></button>
-      <span class="stufe-val">${isNaN(v) ? "–" : v.toFixed(1).replace(".", ",")} °C</span>
-      <button class="icon-btn small" data-action="stufe" data-entity="${esc(s.entity)}" data-delta="0.5" title="0,5 °C wärmer"><ha-icon icon="mdi:plus"></ha-icon></button>
+      <button class="icon-btn small" data-action="stufe" data-entity="${esc(s.entity)}" data-delta="-0.5" title="0,5 \u00b0C k\u00e4lter"><ha-icon icon="mdi:minus"></ha-icon></button>
+      <span class="stufe-val">${isNaN(v) ? "\u2013" : v.toFixed(1).replace(".", ",")} \u00b0C</span>
+      <button class="icon-btn small" data-action="stufe" data-entity="${esc(s.entity)}" data-delta="0.5" title="0,5 \u00b0C w\u00e4rmer"><ha-icon icon="mdi:plus"></ha-icon></button>
     </div>`;
   }
 
@@ -378,7 +378,7 @@ class HeizplanerCard extends HTMLElement {
     const pts = this._edit.points;
     const t = fmt(m);
     if (pts.some((p) => p[0] === t)) return;
-    // Stufe des Abschnitts an dieser Stelle – neuer Punkt bekommt eine andere
+    // Stufe des Abschnitts an dieser Stelle \u2013 neuer Punkt bekommt eine andere
     const seg = this._segments(pts).find((s) => m >= s.from && m < s.to);
     const cur = seg?.stufe;
     const stufe = cur === "komfort" ? "eco" : "komfort";
@@ -519,7 +519,7 @@ if (!customElements.get("heizplaner-card")) {
   window.customCards.push({
     type: "heizplaner-card",
     name: "Heizplaner",
-    description: "Wochenplan für die Heizung – Räume, Stufen und Zeiten bearbeiten",
+    description: "Wochenplan f\u00fcr die Heizung \u2013 R\u00e4ume, Stufen und Zeiten bearbeiten",
     preview: false,
   });
   console.info(`%c HEIZPLANER-CARD %c ${HP_VERSION} `, "background:#ff9800;color:#000;font-weight:700", "");

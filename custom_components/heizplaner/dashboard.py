@@ -271,3 +271,36 @@ class Dashboard:
         if current is None or config_hash(current) != new_hash or force:
             await self._store.async_save(config)
         return new_hash, False
+
+
+async def async_register_card_resource(hass: HomeAssistant, url: str) -> None:
+    """Karte zusätzlich als Dashboard-Ressource eintragen (wie HACS-Karten).
+
+    Damit lädt jedes Dashboard die Karte zuverlässig – auch wenn der Browser
+    die von der Integration gemeldete Modul-URL nicht übernimmt.
+    """
+    try:
+        from homeassistant.components.lovelace.const import LOVELACE_DATA  # noqa: PLC0415
+    except ImportError:
+        return
+    data = hass.data.get(LOVELACE_DATA)
+    if data is None or getattr(data, "resource_mode", "storage") != "storage":
+        return
+    resources = data.resources
+    try:
+        if not getattr(resources, "loaded", True):
+            await resources.async_load()
+            resources.loaded = True
+        base = url.split("?", 1)[0]
+        ours = [r for r in resources.async_items() if str(r.get("url", "")).split("?", 1)[0] == base]
+        if not ours:
+            await resources.async_create_item({"res_type": "module", "url": url})
+            _LOGGER.info("Karte als Dashboard-Ressource eingetragen: %s", url)
+            return
+        first, *dupes = ours
+        if first.get("url") != url:
+            await resources.async_update_item(first["id"], {"res_type": "module", "url": url})
+        for dupe in dupes:
+            await resources.async_delete_item(dupe["id"])
+    except Exception:  # noqa: BLE001
+        _LOGGER.warning("Karte konnte nicht als Dashboard-Ressource eingetragen werden", exc_info=True)

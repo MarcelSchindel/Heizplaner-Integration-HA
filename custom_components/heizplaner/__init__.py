@@ -38,6 +38,7 @@ from .const import (
     VERSION,
     WEEKDAYS,
 )
+from .dashboard import async_register_card_resource
 from .discovery import ProxyCreateError, async_build_room, used_climates
 from .planer import Planer
 from .schedule import PlanError
@@ -68,6 +69,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HeizplanerConfigEntry) -
     entry.runtime_data = planer
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await planer.async_start()
+    await async_register_card_resource(hass, f"{CARD_URL}?v={VERSION}")
     await planer.async_setup_dashboard()
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
