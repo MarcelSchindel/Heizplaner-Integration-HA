@@ -22,7 +22,9 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          ignore: brands
+          # description/topics/license werden in den Repo-Einstellungen gesetzt –
+          # danach diese drei hier wieder entfernen
+          ignore: brands description topics license
 
   tests:
     name: Tests
